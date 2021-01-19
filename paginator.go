@@ -69,7 +69,6 @@ func New(adapter Adapter, maxPerPage int) Paginator {
 func (p *paginator) SetSort(sort string) {
 
 	p.sort = sort
-	return nil
 }
 
 func (p *paginator) Sort() (string, error) {
