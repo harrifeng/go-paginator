@@ -77,7 +77,7 @@ func (p *paginator) Sort() (string, error) {
 	}
 
 	if p.sort[0] == '+' {
-		return fmt.Sprintf("%v", p.sort[1:len(p.sort)]), nil
+		return fmt.Sprintf("%v asc", p.sort[1:len(p.sort)]), nil
 	} else if p.sort[0] == '-' {
 		return fmt.Sprintf("%v desc", p.sort[1:len(p.sort)]), nil
 	} else {
