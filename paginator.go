@@ -37,7 +37,7 @@ type (
 		HasPrev() (bool, error)
 		PageNums() (int, error)
 		PerPage() (int, error)
-		SetSort(sort string) error
+		SetSort(sort string)
 		Sort() (string, error)
 	}
 
@@ -66,7 +66,7 @@ func New(adapter Adapter, maxPerPage int) Paginator {
 	}
 }
 
-func (p *paginator) SetSort(sort string) error {
+func (p *paginator) SetSort(sort string) {
 
 	p.sort = sort
 	return nil
