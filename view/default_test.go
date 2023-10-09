@@ -1,6 +1,7 @@
 package view_test
 
 import (
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/vcraescu/go-paginator"
 	"github.com/vcraescu/go-paginator/adapter"
@@ -10,9 +11,8 @@ import (
 
 type DefaultViewTestSuite struct {
 	suite.Suite
-
-	paginator paginator.Paginator
-	view      view.Viewer
+	paginator *paginator.Paginator
+	view      view.DefaultView
 }
 
 func (suite *DefaultViewTestSuite) SetupTest() {
@@ -22,129 +22,85 @@ func (suite *DefaultViewTestSuite) SetupTest() {
 	}
 
 	p := paginator.New(adapter.NewSliceAdapter(data), 10)
-	suite.paginator = p
+	suite.paginator = &p
 
 	suite.view = view.New(suite.paginator)
 }
 
 func (suite *DefaultViewTestSuite) TestItems1stCurrentPage() {
-	require := suite.Require()
-	pages, err := suite.view.Pages()
-	require.NoError(err)
-	require.Len(pages, 10)
+	pages := suite.view.Pages()
 
-	_, err = suite.view.Prev()
-	require.Equal(paginator.ErrNoPrevPage, err)
-
-	next, err := suite.view.Next()
-	require.NoError(err)
-	require.Equal(2, next)
+	assert.Len(suite.T(), pages, 10)
+	assert.Equal(suite.T(), 0, suite.view.Prev())
+	assert.Equal(suite.T(), 2, suite.view.Next())
 
 	for i, page := range pages {
-		require.Equal(i+1, page)
+		assert.Equal(suite.T(), i+1, page)
 	}
 }
 
 func (suite *DefaultViewTestSuite) TestItems3rdCurrentPage() {
-	require := suite.Require()
 	suite.paginator.SetPage(3)
-	pages, err := suite.view.Pages()
-	require.NoError(err)
+	pages := suite.view.Pages()
 
-	require.Len(pages, 10)
-
-	prev, err := suite.view.Prev()
-	require.NoError(err)
-	require.Equal(2, prev)
-
-	next, err := suite.view.Next()
-	require.NoError(err)
-	require.Equal(4, next)
+	assert.Len(suite.T(), pages, 10)
+	assert.Equal(suite.T(), 2, suite.view.Prev())
+	assert.Equal(suite.T(), 4, suite.view.Next())
 
 	for i, page := range pages {
-		require.Equal(i+1, page)
+		assert.Equal(suite.T(), i+1, page)
 	}
 }
 
 func (suite *DefaultViewTestSuite) TestItems6thCurrentPage() {
-	require := suite.Require()
 	suite.paginator.SetPage(6)
+	pages := suite.view.Pages()
 
-	pages, err := suite.view.Pages()
-	require.NoError(err)
-	require.Len(pages, 10)
-
-	prev, err := suite.view.Prev()
-	require.NoError(err)
-	require.Equal(5, prev)
-
-	next, err := suite.view.Next()
-	require.NoError(err)
-	require.Equal(7, next)
+	assert.Len(suite.T(), pages, 10)
+	assert.Equal(suite.T(), 5, suite.view.Prev())
+	assert.Equal(suite.T(), 7, suite.view.Next())
 
 	for i, page := range pages {
-		require.Equal(i+1, page)
+		assert.Equal(suite.T(), i+1, page)
 	}
 }
 
 func (suite *DefaultViewTestSuite) TestItems7thCurrentPage() {
-	require := suite.Require()
 	suite.paginator.SetPage(7)
+	pages := suite.view.Pages()
 
-	pages, err := suite.view.Pages()
-	require.NoError(err)
-	require.Len(pages, 10)
-
-	prev, err := suite.view.Prev()
-	require.NoError(err)
-	require.Equal(6, prev)
-
-	next, err := suite.view.Next()
-	require.NoError(err)
-	require.Equal(8, next)
+	assert.Len(suite.T(), pages, 10)
+	assert.Equal(suite.T(), 6, suite.view.Prev())
+	assert.Equal(suite.T(), 8, suite.view.Next())
 
 	for i, page := range pages {
-		require.Equal(i+2, page)
+		assert.Equal(suite.T(), i+2, page)
 	}
 }
 
 func (suite *DefaultViewTestSuite) TestItems10thCurrentPage() {
-	require := suite.Require()
 	suite.paginator.SetPage(10)
+	pages := suite.view.Pages()
 
-	pages, err := suite.view.Pages()
-	require.NoError(err)
-	require.Len(pages, 10)
-
-	prev, err := suite.view.Prev()
-	require.NoError(err)
-	require.Equal(9, prev)
-
-	next, err := suite.view.Next()
-	require.NoError(err)
-	require.Equal(11, next)
+	assert.Len(suite.T(), pages, 10)
+	assert.Equal(suite.T(), 9, suite.view.Prev())
+	assert.Equal(suite.T(), 11, suite.view.Next())
 
 	for i, page := range pages {
-		require.Equal(i+5, page)
+		assert.Equal(suite.T(), i+5, page)
 	}
 }
 
 func (suite *DefaultViewTestSuite) TestItemsLastCurrentPage() {
-	require := suite.Require()
 	suite.paginator.SetPage(15)
+	pages := suite.view.Pages()
 
-	pages, err := suite.view.Pages()
-	require.NoError(err)
-	require.Len(pages, 10)
-
-	prev, err := suite.view.Prev()
-	require.Equal(14, prev)
-
-	_, err = suite.view.Next()
-	require.Equal(paginator.ErrNoNextPage, err)
+	assert.Len(suite.T(), pages, 10)
+	assert.Equal(suite.T(), 14, suite.view.Prev())
+	assert.Equal(suite.T(), 0, suite.view.Next())
 
 	for i, page := range pages {
-		require.Equal(i+10, page)
+		assert.Equal(suite.T(), i+10, page)
 	}
 }
 
@@ -155,45 +111,32 @@ func (suite *DefaultViewTestSuite) TestItemsNumberOfPagesLessThanLength() {
 	}
 
 	p := paginator.New(adapter.NewSliceAdapter(data), 10)
-	suite.paginator = p
+	suite.paginator = &p
+
 	suite.view = view.New(suite.paginator)
+
 	suite.paginator.SetPage(4)
+	pages := suite.view.Pages()
 
-	require := suite.Require()
-	pages, err := suite.view.Pages()
-	require.NoError(err)
-	require.Len(pages, 7)
-
-	prev, err := suite.view.Prev()
-	require.NoError(err)
-	require.Equal(3, prev)
-
-	next, err := suite.view.Next()
-	require.NoError(err)
-	require.Equal(5, next)
+	assert.Len(suite.T(), pages, 7)
+	assert.Equal(suite.T(), 3, suite.view.Prev())
+	assert.Equal(suite.T(), 5, suite.view.Next())
 
 	for i, page := range pages {
-		require.Equal(i+1, page)
+		assert.Equal(suite.T(), i+1, page)
 	}
 }
 
 func (suite *DefaultViewTestSuite) TestItemsInvalidCurrentPage() {
-	require := suite.Require()
 	suite.paginator.SetPage(-14)
+	pages := suite.view.Pages()
 
-	pages, err := suite.view.Pages()
-	require.NoError(err)
-	require.Len(pages, 10)
-
-	_, err = suite.view.Prev()
-	require.Equal(paginator.ErrNoPrevPage, err)
-
-	next, err := suite.view.Next()
-	require.NoError(err)
-	require.Equal(2, next)
+	assert.Len(suite.T(), pages, 10)
+	assert.Equal(suite.T(), 0, suite.view.Prev())
+	assert.Equal(suite.T(), 2, suite.view.Next())
 
 	for i, page := range pages {
-		require.Equal(i+1, page)
+		assert.Equal(suite.T(), i+1, page)
 	}
 }
 

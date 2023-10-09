@@ -1,28 +1,24 @@
 package paginator_test
 
 import (
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/vcraescu/go-paginator"
 	"testing"
 )
 
-var (
-	_ paginator.Adapter = (*GenericAdapter)(nil)
-)
+type Post struct {
+	ID     uint `gorm:"primary_key"`
+	Number int
+}
 
-type (
-	Post struct {
-		ID     uint `gorm:"primary_key"`
-		Number int
-	}
+type GenericAdapter struct {
+	nums int
+}
 
-	GenericAdapter struct {
-		nums int64
-	}
-)
-
-func (p GenericAdapter) Nums() (int64, error) {
-	return p.nums, nil
+func (p GenericAdapter) Nums() int {
+	return p.nums
 }
 
 func (p GenericAdapter) Slice(offset, length int, data interface{}) error {
@@ -42,32 +38,19 @@ type PaginatorTestSuite struct {
 func (suite *PaginatorTestSuite) TestFirstPage() {
 	p := paginator.New(&GenericAdapter{nums: 100}, 10)
 
-	pn, _ := p.PageNums()
-	suite.Equal(10, pn)
-
-	page, _ := p.Page()
-	suite.Equal(1, page)
-
-	hn, _ := p.HasNext()
-	suite.True(hn)
-
-	hp, _ := p.HasPrev()
-	suite.False(hp)
-
-	hpages, _ := p.HasPages()
-	suite.True(hpages)
+	assert.Equal(suite.T(), 10, p.PageNums())
+	assert.Equal(suite.T(), 1, p.Page())
+	assert.True(suite.T(), p.HasNext())
+	assert.False(suite.T(), p.HasPrev())
+	assert.True(suite.T(), p.HasPages())
 }
 
 func (suite *PaginatorTestSuite) TestLastPage() {
 	p := paginator.New(&GenericAdapter{nums: 100}, 10)
 
 	p.SetPage(10)
-
-	hn, _ := p.HasNext()
-	suite.False(hn)
-
-	hp, _ := p.HasPrev()
-	suite.True(hp)
+	assert.False(suite.T(), p.HasNext())
+	assert.True(suite.T(), p.HasPrev())
 }
 
 func (suite *PaginatorTestSuite) TestOutOfRangeCurrentPage() {
@@ -76,29 +59,19 @@ func (suite *PaginatorTestSuite) TestOutOfRangeCurrentPage() {
 	var posts []Post
 	p.SetPage(11)
 	err := p.Results(&posts)
-	suite.NoError(err)
-
-	page, _ := p.Page()
-	suite.Equal(10, page)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 10, p.Page())
 
 	posts = make([]Post, 0)
 	p.SetPage(-4)
-
-	page, _ = p.Page()
-	suite.Equal(1, page)
-
-	hn, _ := p.HasNext()
-	suite.True(hn)
-
-	hp, _ := p.HasPrev()
-	suite.False(hp)
-
-	hpages, _ := p.HasPages()
-	suite.True(hpages)
+	assert.Equal(suite.T(), 1, p.Page())
+	assert.True(suite.T(), p.HasNext())
+	assert.False(suite.T(), p.HasPrev())
+	assert.True(suite.T(), p.HasPages())
 
 	err = p.Results(&posts)
-	suite.NoError(err)
-	suite.Len(posts, 10)
+	assert.NoError(suite.T(), err)
+	assert.Len(suite.T(), posts, 10)
 }
 
 func (suite *PaginatorTestSuite) TestCurrentPageResults() {
@@ -107,12 +80,11 @@ func (suite *PaginatorTestSuite) TestCurrentPageResults() {
 	var posts []Post
 	p.SetPage(6)
 	err := p.Results(&posts)
-	suite.NoError(err)
+	assert.NoError(suite.T(), err)
 
-	suite.Len(posts, 10)
+	assert.Len(suite.T(), posts, 10)
 	for i, post := range posts {
-		page, _ := p.Page()
-		suite.Equal((page-1)*10+i+1, post.Number)
+		assert.Equal(suite.T(), (p.Page()-1)*10+i+1, post.Number)
 	}
 }
 
