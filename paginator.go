@@ -35,7 +35,6 @@ type (
 		NextPage() (int, error)
 		HasPrev() (bool, error)
 		PageNums() (int, error)
-		PerPage() (int, error)
 	}
 
 	// Paginator structure
@@ -198,9 +197,4 @@ func (p paginator) PageNums() (int, error) {
 	}
 
 	return int(n), nil
-}
-
-// PerPage returns the exact per page for the pagination.
-func (p paginator) PerPage() (int, error) {
-	return p.maxPerPage, nil
 }
