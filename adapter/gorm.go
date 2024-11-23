@@ -12,7 +12,8 @@ type GORMAdapter struct {
 
 // NewGORMAdapter gorm adapter constructor which receive the gorm db query.
 func NewGORMAdapter(db *gorm.DB) paginator.Adapter {
-	return &GORMAdapter{db: db}
+	newDb := db.Unscoped()
+	return &GORMAdapter{db: newDb}
 }
 
 // Nums returns the number of records
